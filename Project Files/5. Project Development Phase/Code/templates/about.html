@@ -1,0 +1,127 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container section animate-fade-in">
+    <h1 class="page-title">About the OptiCrop Engine</h1>
+    <p class="section-subtitle">A deep dive into our methodology, machine learning models, and classification metrics.</p>
+
+    <div class="grid grid-2-1">
+        <!-- Main Info column -->
+        <div class="card p-lg">
+            <h2>Project Overview</h2>
+            <p>Modern farming faces massive challenges, including climate variability, soil degradation, and rising input costs. OptiCrop addresses these challenges by replacing guesswork with data-driven predictive models. The application processes soil nutrient levels and environmental climate markers to recommend the most optimal crop for sowing.</p>
+            
+            <h3 class="mt-lg">Supported Soil & Weather Parameters</h3>
+            <p>Our machine learning engine requires seven key environmental and soil features to determine crop suitability:</p>
+            <div class="metrics-grid">
+                <div class="metric-card-sm">
+                    <strong>Nitrogen (N)</strong>
+                    <span>Ratio of Nitrogen content in soil (mg/kg)</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>Phosphorus (P)</strong>
+                    <span>Ratio of Phosphorous content in soil (mg/kg)</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>Potassium (K)</strong>
+                    <span>Ratio of Potassium content in soil (mg/kg)</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>Temperature</strong>
+                    <span>Air temperature in degrees Celsius (°C)</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>Humidity</strong>
+                    <span>Relative air humidity percentage (%)</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>pH Level</strong>
+                    <span>Soil pH value indicating acidity/alkalinity</span>
+                </div>
+                <div class="metric-card-sm">
+                    <strong>Rainfall</strong>
+                    <span>Average seasonal rainfall in millimeters (mm)</span>
+                </div>
+            </div>
+            
+            <h3 class="mt-lg">Algorithm & Training Architecture</h3>
+            <p>The core machine learning engine uses a multinomial <strong>Logistic Regression</strong> model trained on cross-verified agricultural datasets. Logistic Regression was selected for its high interpretability, rapid inference speed, and exceptional classification accuracy on clean soil boundary features.</p>
+            <p>Preprocessing pipelines include outlier trimming via the **Interquartile Range (IQR)** method applied to phosphorous metrics to ensure anomalous data points do not skew decision boundary margins. Features are split into 80% training and 20% test sets to validate model generalization capability.</p>
+        </div>
+
+        <!-- Sidebar stats column -->
+        <div class="sidebar-info">
+            <div class="card card-accent mb-lg">
+                <h3>Model Performance</h3>
+                <div class="accuracy-gauge">
+                    <span class="number">97.8%</span>
+                    <span class="label">Test Set Accuracy</span>
+                </div>
+                <p>The model was validated using stratified 5-fold cross-validation and achieved an overall F1-score of 98% across 22 crop classes.</p>
+            </div>
+            
+            <div class="card p-md">
+                <h3>Core Technologies</h3>
+                <ul class="tech-list">
+                    <li><strong>Scikit-Learn:</strong> ML model training, prediction API, and validation splits.</li>
+                    <li><strong>Pandas & NumPy:</strong> Statistical cleanup, outlier trimming, and array matrices.</li>
+                    <li><strong>Flask Backend:</strong> Robust Web WSGI server and API routers.</li>
+                    <li><strong>HTML5 / Vanilla CSS:</strong> Ultra-responsive layout with custom HSL styles.</li>
+                    <li><strong>Chart.js:</strong> Dynamic frontend research visualization.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Report Table -->
+    <div class="card mt-lg p-lg">
+        <h2>Classification Metrics Breakdown</h2>
+        <p>A class-by-class look at the model precision, recall, and f1-scores generated during evaluation on our test set. Our model shows a high degree of precision for high-value crops such as coffee, apples, and chickpea.</p>
+        
+        <div class="table-responsive">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>Crop Class</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-Score</th>
+                        <th>Support</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Apple</td><td>1.00</td><td>1.00</td><td>1.00</td><td>4</td></tr>
+                    <tr><td>Banana</td><td>1.00</td><td>1.00</td><td>1.00</td><td>22</td></tr>
+                    <tr><td>Blackgram</td><td>0.95</td><td>0.95</td><td>0.95</td><td>21</td></tr>
+                    <tr><td>Chickpea</td><td>1.00</td><td>1.00</td><td>1.00</td><td>24</td></tr>
+                    <tr><td>Coconut</td><td>1.00</td><td>1.00</td><td>1.00</td><td>19</td></tr>
+                    <tr><td>Coffee</td><td>1.00</td><td>1.00</td><td>1.00</td><td>20</td></tr>
+                    <tr><td>Cotton</td><td>1.00</td><td>1.00</td><td>1.00</td><td>22</td></tr>
+                    <tr><td>Grapes</td><td>1.00</td><td>1.00</td><td>1.00</td><td>6</td></tr>
+                    <tr><td>Jute</td><td>0.93</td><td>0.82</td><td>0.88</td><td>17</td></tr>
+                    <tr><td>Kidneybeans</td><td>1.00</td><td>1.00</td><td>1.00</td><td>20</td></tr>
+                    <tr><td>Lentil</td><td>1.00</td><td>1.00</td><td>1.00</td><td>17</td></tr>
+                    <tr><td>Maize</td><td>0.94</td><td>1.00</td><td>0.97</td><td>17</td></tr>
+                    <tr><td>Mango</td><td>1.00</td><td>1.00</td><td>1.00</td><td>21</td></tr>
+                    <tr><td>Mothbeans</td><td>1.00</td><td>0.88</td><td>0.94</td><td>26</td></tr>
+                    <tr><td>Mungbean</td><td>1.00</td><td>1.00</td><td>1.00</td><td>13</td></tr>
+                    <tr><td>Muskmelon</td><td>1.00</td><td>1.00</td><td>1.00</td><td>14</td></tr>
+                    <tr><td>Orange</td><td>1.00</td><td>1.00</td><td>1.00</td><td>25</td></tr>
+                    <tr><td>Papaya</td><td>1.00</td><td>0.95</td><td>0.98</td><td>21</td></tr>
+                    <tr><td>Pigeonpeas</td><td>0.86</td><td>1.00</td><td>0.92</td><td>18</td></tr>
+                    <tr><td>Pomegranate</td><td>1.00</td><td>1.00</td><td>1.00</td><td>20</td></tr>
+                    <tr><td>Rice</td><td>0.89</td><td>0.96</td><td>0.92</td><td>25</td></tr>
+                    <tr><td>Watermelon</td><td>1.00</td><td>1.00</td><td>1.00</td><td>21</td></tr>
+                    <tr class="table-summary-row">
+                        <td><strong>Average / Total</strong></td>
+                        <td><strong>0.98</strong></td>
+                        <td><strong>0.98</strong></td>
+                        <td><strong>0.98</strong></td>
+                        <td><strong>413</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
