@@ -1,0 +1,313 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container section animate-fade-in">
+    <h1 class="page-title">Research & Data Analytics Dashboard</h1>
+    <p class="section-subtitle">Explore crop-environment interactions, nutrient profiles, and clustering trends across the entire agricultural dataset.</p>
+
+    <!-- Row 1: Crop Profile Comparison -->
+    <div class="grid grid-2-1">
+        <div class="card p-lg">
+            <div class="flex-between">
+                <h2>Optimal Soil Profiles by Crop</h2>
+                <div class="select-wrapper">
+                    <select id="crop-selector" class="form-select" onchange="loadCropProfileChart(this.value)">
+                        {% for crop in crop_list %}
+                        <option value="{{ crop }}">{{ crop.capitalize() }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <p class="text-sm mb-lg">Compare average parameters for the selected crop (blue) against the average of all other crops combined (grey).</p>
+            
+            <div class="chart-container">
+                <canvas id="cropProfileChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card card-accent p-lg flex-col fill-height">
+            <h3>Seasonal Crop Classifications</h3>
+            <p class="text-sm">Based on data preprocessing rules analyzing temperature, humidity, and rainfall boundaries, crops are classified into seasonal clusters:</p>
+            
+            <div class="season-cards mt-md">
+                <div class="season-card summer">
+                    <div class="season-title">
+                        <span class="season-icon">☀️</span>
+                        <strong>Summer Crops</strong>
+                    </div>
+                    <div class="season-crops">Pigeon Peas, Moth Beans, Blackgram, Mango, Grapes, Orange, Papaya</div>
+                </div>
+
+                <div class="season-card winter">
+                    <div class="season-title">
+                        <span class="season-icon">❄️</span>
+                        <strong>Winter Crops</strong>
+                    </div>
+                    <div class="season-crops">Maize, Pigeon Peas, Lentil, Pomegranate, Grapes, Orange</div>
+                </div>
+
+                <div class="season-card rainy">
+                    <div class="season-title">
+                        <span class="season-icon">🌧️</span>
+                        <strong>Rainy Crops</strong>
+                    </div>
+                    <div class="season-crops">Rice, Papaya, Coconut</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: Bivariate Scatter Correlation -->
+    <div class="card mt-lg p-lg">
+        <div class="flex-between">
+            <div>
+                <h2>Bivariate Parameter Correlation</h2>
+                <p class="text-sm">Select two properties to visualize how different crop classes cluster together along decision boundaries. Demonstrates feature space clustering for models like KNN and Logistic Regression.</p>
+            </div>
+            <div class="flex-row gap-sm">
+                <div class="select-wrapper">
+                    <label class="text-xs block" for="x-axis-selector">X-Axis</label>
+                    <select id="x-axis-selector" class="form-select-sm" onchange="updateScatterPlot()">
+                        <option value="nitrogen">Nitrogen</option>
+                        <option value="phosphorous" selected>Phosphorous</option>
+                        <option value="potassium">Potassium</option>
+                        <option value="temperature">Temperature</option>
+                        <option value="humidity">Humidity</option>
+                        <option value="ph">Soil pH</option>
+                        <option value="rainfall">Rainfall</option>
+                    </select>
+                </div>
+                <div class="select-wrapper">
+                    <label class="text-xs block" for="y-axis-selector">Y-Axis</label>
+                    <select id="y-axis-selector" class="form-select-sm" onchange="updateScatterPlot()">
+                        <option value="nitrogen">Nitrogen</option>
+                        <option value="phosphorous">Phosphorous</option>
+                        <option value="potassium" selected>Potassium</option>
+                        <option value="temperature">Temperature</option>
+                        <option value="humidity">Humidity</option>
+                        <option value="ph">Soil pH</option>
+                        <option value="rainfall">Rainfall</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="chart-container-lg mt-md">
+            <canvas id="scatterPlotChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let cropAveragesData = {};
+    let cropRawData = [];
+    let profileChart = null;
+    let scatterChart = null;
+
+    // Fetch crop average data on load
+    document.addEventListener("DOMContentLoaded", function() {
+        // Fetch averages
+        fetch('/api/crop-averages')
+            .then(res => res.json())
+            .then(data => {
+                cropAveragesData = data;
+                // Load default crop profile chart
+                const firstCrop = Object.keys(data)[0];
+                if (firstCrop) {
+                    loadCropProfileChart(firstCrop);
+                }
+            });
+
+        // Fetch raw sample data for scatter plot
+        fetch('/api/crop-data')
+            .then(res => res.json())
+            .then(data => {
+                cropRawData = data;
+                updateScatterPlot();
+            });
+    });
+
+    // 1. Crop Profile Bar Chart
+    function loadCropProfileChart(cropName) {
+        if (!cropAveragesData[cropName]) return;
+
+        const selectedCrop = cropAveragesData[cropName];
+        
+        // Calculate average of all crops to compare against
+        const cropKeys = Object.keys(cropAveragesData);
+        const overallAverages = {
+            nitrogen: 0, phosphorous: 0, potassium: 0, 
+            temperature: 0, humidity: 0, ph: 0, rainfall: 0
+        };
+        
+        cropKeys.forEach(key => {
+            Object.keys(overallAverages).forEach(param => {
+                overallAverages[param] += cropAveragesData[key][param];
+            });
+        });
+        
+        Object.keys(overallAverages).forEach(param => {
+            overallAverages[param] = parseFloat((overallAverages[param] / cropKeys.length).toFixed(2));
+        });
+
+        const labels = ['Nitrogen (mg/kg)', 'Phosphorous (mg/kg)', 'Potassium (mg/kg)', 'Temperature (°C)', 'Humidity (%)', 'Soil pH', 'Rainfall (mm)'];
+        const params = ['nitrogen', 'phosphorous', 'potassium', 'temperature', 'humidity', 'ph', 'rainfall'];
+
+        const selectedValues = params.map(p => selectedCrop[p]);
+        const baselineValues = params.map(p => overallAverages[p]);
+
+        const ctx = document.getElementById('cropProfileChart').getContext('2d');
+        
+        if (profileChart) {
+            profileChart.destroy();
+        }
+
+        profileChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: `${cropName.charAt(0).toUpperCase() + cropName.slice(1)} Average`,
+                        data: selectedValues,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: '#2563eb',
+                        borderWidth: 1.5,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Dataset Global Average',
+                        data: baselineValues,
+                        backgroundColor: 'rgba(148, 163, 184, 0.3)',
+                        borderColor: '#64748b',
+                        borderWidth: 1.5,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8', font: { family: 'Inter' } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8', font: { family: 'Inter' } }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#f8fafc',
+                            font: { family: 'Outfit', size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Bivariate Scatter Correlation Chart
+    function updateScatterPlot() {
+        if (cropRawData.length === 0) return;
+
+        const xAxisKey = document.getElementById('x-axis-selector').value;
+        const yAxisKey = document.getElementById('y-axis-selector').value;
+        
+        const xAxisLabel = document.getElementById('x-axis-selector').options[document.getElementById('x-axis-selector').selectedIndex].text;
+        const yAxisLabel = document.getElementById('y-axis-selector').options[document.getElementById('y-axis-selector').selectedIndex].text;
+
+        // Group data points by crop labels for coloring
+        const groups = {};
+        cropRawData.forEach(row => {
+            const crop = row.label;
+            if (!groups[crop]) {
+                groups[crop] = [];
+            }
+            groups[crop].push({
+                x: row[xAxisKey],
+                y: row[yAxisKey]
+            });
+        });
+
+        // Generate distinct color palettes for the top crop groups
+        const cropLabels = Object.keys(groups);
+        const datasets = cropLabels.map((crop, index) => {
+            const hue = (index * 360 / cropLabels.length);
+            return {
+                label: crop.charAt(0).toUpperCase() + crop.slice(1),
+                data: groups[crop],
+                backgroundColor: `hsla(${hue}, 80%, 60%, 0.7)`,
+                borderColor: `hsla(${hue}, 80%, 45%, 1)`,
+                borderWidth: 1,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            };
+        });
+
+        const ctx = document.getElementById('scatterPlotChart').getContext('2d');
+        
+        if (scatterChart) {
+            scatterChart.destroy();
+        }
+
+        scatterChart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: xAxisLabel,
+                            color: '#f8fafc',
+                            font: { family: 'Outfit', size: 14 }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: yAxisLabel,
+                            color: '#f8fafc',
+                            font: { family: 'Outfit', size: 14 }
+                        },
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            color: '#94a3b8',
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            padding: 10,
+                            font: { family: 'Inter', size: 10 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: (${context.parsed.x}, ${context.parsed.y})`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

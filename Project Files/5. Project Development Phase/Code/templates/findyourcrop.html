@@ -1,0 +1,231 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="container section animate-fade-in">
+    <h1 class="page-title text-center">Find Your Best Crop</h1>
+    <p class="section-subtitle text-center">Input your soil nutrient levels and environmental climate parameters below to generate an AI-driven crop recommendation.</p>
+
+    <div class="grid grid-2">
+        <!-- Form Column -->
+        <div class="card p-lg">
+            <h2>Soil & Climatic Conditions</h2>
+            <form action="{{ url_for('predict') }}" method="POST" id="prediction-form">
+                <!-- Group 1: Soil Nutrients -->
+                <h3 class="form-section-title">Soil Nutrients (N-P-K)</h3>
+                
+                <div class="form-group">
+                    <label for="nitrogen">Nitrogen (N) - mg/kg</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="nitrogen-slider" min="0" max="140" value="{{ inputs.nitrogen if inputs else 50 }}" step="1" oninput="updateInput('nitrogen', this.value)">
+                        <input type="number" id="nitrogen" name="nitrogen" min="0" max="140" value="{{ inputs.nitrogen if inputs else 50 }}" required oninput="updateSlider('nitrogen', this.value)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="phosphorous">Phosphorous (P) - mg/kg</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="phosphorous-slider" min="5" max="145" value="{{ inputs.phosphorous if inputs else 50 }}" step="1" oninput="updateInput('phosphorous', this.value)">
+                        <input type="number" id="phosphorous" name="phosphorous" min="5" max="145" value="{{ inputs.phosphorous if inputs else 50 }}" required oninput="updateSlider('phosphorous', this.value)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="potassium">Potassium (K) - mg/kg</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="potassium-slider" min="5" max="205" value="{{ inputs.potassium if inputs else 50 }}" step="1" oninput="updateInput('potassium', this.value)">
+                        <input type="number" id="potassium" name="potassium" min="5" max="205" value="{{ inputs.potassium if inputs else 50 }}" required oninput="updateSlider('potassium', this.value)">
+                    </div>
+                </div>
+
+                <!-- Group 2: Weather & Environment -->
+                <h3 class="form-section-title mt-lg">Climate & Environment</h3>
+
+                <div class="form-group">
+                    <label for="temperature">Temperature - °C</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="temperature-slider" min="10" max="50" value="{{ inputs.temperature if inputs else 25.0 }}" step="0.1" oninput="updateInput('temperature', this.value)">
+                        <input type="number" id="temperature" name="temperature" min="10" max="50" step="0.1" value="{{ inputs.temperature if inputs else 25.0 }}" required oninput="updateSlider('temperature', this.value)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="humidity">Relative Humidity - %</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="humidity-slider" min="10" max="100" value="{{ inputs.humidity if inputs else 80.0 }}" step="0.1" oninput="updateInput('humidity', this.value)">
+                        <input type="number" id="humidity" name="humidity" min="10" max="100" step="0.1" value="{{ inputs.humidity if inputs else 80.0 }}" required oninput="updateSlider('humidity', this.value)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ph">Soil pH</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="ph-slider" min="3" max="10" value="{{ inputs.ph if inputs else 6.5 }}" step="0.1" oninput="updateInput('ph', this.value)">
+                        <input type="number" id="ph" name="ph" min="3" max="10" step="0.1" value="{{ inputs.ph if inputs else 6.5 }}" required oninput="updateSlider('ph', this.value)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="rainfall">Rainfall - mm</label>
+                    <div class="input-slider-group">
+                        <input type="range" id="rainfall-slider" min="20" max="300" value="{{ inputs.rainfall if inputs else 100.0 }}" step="0.1" oninput="updateInput('rainfall', this.value)">
+                        <input type="number" id="rainfall" name="rainfall" min="20" max="300" step="0.1" value="{{ inputs.rainfall if inputs else 100.0 }}" required oninput="updateSlider('rainfall', this.value)">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block mt-lg">Generate AI Recommendation</button>
+            </form>
+        </div>
+
+        <!-- Output Column -->
+        <div class="flex-col">
+            {% if prediction_text %}
+            <div class="card card-accent p-lg animate-scale-up">
+                <h2>Recommendation Result</h2>
+                <div class="result-box">
+                    <div class="result-icon-success">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <div class="result-text">{{ prediction_text }}</div>
+                </div>
+                
+                <p class="suitability-msg">{{ suitability_msg }}</p>
+                
+                <h3 class="mt-lg">Parameters Comparison Profile</h3>
+                <p class="text-sm">This chart compares your input soil conditions against the optimal average requirements for <strong>{{ predicted_crop.capitalize() }}</strong>.</p>
+                
+                <div class="chart-container-sm">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+            {% else %}
+            <div class="card p-lg flex-center text-center fill-height">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z" fill="var(--text-muted)"/>
+                        </svg>
+                    </div>
+                    <h3>Waiting for Inputs</h3>
+                    <p class="max-w-xs">Fill out the parameters on the left and submit the form to predict the best agricultural crop for your field.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Sync ranges and number boxes
+    function updateInput(id, val) {
+        document.getElementById(id).value = val;
+    }
+    
+    function updateSlider(id, val) {
+        // Ensure values remain within range limits
+        const slider = document.getElementById(id + '-slider');
+        if (slider) {
+            slider.value = val;
+        }
+    }
+
+    {% if prediction_text and predicted_crop %}
+    // If a prediction exists, fetch average data and render comparison chart
+    document.addEventListener("DOMContentLoaded", function() {
+        const predictedCrop = "{{ predicted_crop }}";
+        
+        // User inputs
+        const userInput = {
+            nitrogen: parseFloat("{{ inputs.nitrogen }}"),
+            phosphorous: parseFloat("{{ inputs.phosphorous }}"),
+            potassium: parseFloat("{{ inputs.potassium }}"),
+            temperature: parseFloat("{{ inputs.temperature }}"),
+            humidity: parseFloat("{{ inputs.humidity }}"),
+            ph: parseFloat("{{ inputs.ph }}"),
+            rainfall: parseFloat("{{ inputs.rainfall }}")
+        };
+
+        fetch('/api/crop-averages')
+            .then(res => res.json())
+            .then(averages => {
+                if (!averages[predictedCrop]) return;
+                
+                const cropAvg = averages[predictedCrop];
+                
+                // We normalize inputs as a percentage of the crop's average requirement to display them on the same scale (100% = optimal)
+                const labels = ['Nitrogen', 'Phosphorous', 'Potassium', 'Temperature', 'Humidity', 'pH Level', 'Rainfall'];
+                const keys = ['nitrogen', 'phosphorous', 'potassium', 'temperature', 'humidity', 'ph', 'rainfall'];
+                
+                // User values relative to averages
+                const userValuesPct = keys.map(k => {
+                    const avgVal = cropAvg[k];
+                    if (avgVal === 0) return 0;
+                    return Math.round((userInput[k] / avgVal) * 100);
+                });
+
+                // Optimal line (which is always 100% relative to itself)
+                const optimalValuesPct = new Array(7).fill(100);
+
+                const ctx = document.getElementById('comparisonChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Your Field conditions (% of Optimal)',
+                                data: userValuesPct,
+                                backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                                borderColor: 'rgba(52, 211, 153, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(52, 211, 153, 1)'
+                            },
+                            {
+                                label: 'Crop Optimal Target (100%)',
+                                data: optimalValuesPct,
+                                backgroundColor: 'rgba(99, 102, 241, 0.05)',
+                                borderColor: 'rgba(99, 102, 241, 0.8)',
+                                borderDash: [5, 5],
+                                borderWidth: 1.5,
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
+                                grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                                pointLabels: {
+                                    color: '#94a3b8',
+                                    font: { family: 'Outfit', size: 11 }
+                                },
+                                ticks: {
+                                    display: false,
+                                    maxTicksLimit: 5
+                                },
+                                min: 0,
+                                max: 200 // Caps visual scale at 200%
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#f8fafc',
+                                    font: { family: 'Inter', size: 10 }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    });
+    {% endif %}
+</script>
+{% endblock %}

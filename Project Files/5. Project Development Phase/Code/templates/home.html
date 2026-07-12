@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<div class="hero-section animate-fade-in">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1 class="hero-title">Precision Agriculture Powered by AI</h1>
+        <p class="hero-subtitle">Optimize your crop yields, improve resource efficiency, and make data-driven agricultural decisions with the OptiCrop Production Engine.</p>
+        <div class="hero-buttons">
+            <a href="/findyourcrop" class="btn btn-primary">Find Your Best Crop</a>
+            <a href="/dashboard" class="btn btn-secondary">Explore Research Data</a>
+        </div>
+    </div>
+</div>
+
+<div class="container section">
+    <h2 class="section-title text-center">Core Agricultural Scenarios</h2>
+    <p class="section-subtitle text-center">OptiCrop provides specialized tools for farmers, agricultural consultants, and research teams.</p>
+    
+    <div class="grid grid-3">
+        <!-- Card 1 -->
+        <div class="card card-hover">
+            <div class="card-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3C6.5 3 2 6.5 2 12C2 17.5 6.5 21 12 21C17.5 21 22 17.5 22 12C22 6.5 17.5 3 12 3ZM12 19C8.1 19 5 15.9 5 12C5 8.1 8.1 5 12 5C15.9 5 19 8.1 19 12C19 15.9 15.9 19 12 19Z" fill="currentColor"/>
+                    <path d="M12 7C9.2 7 7 9.2 7 12H9C9 10.3 10.3 9 12 9C13.7 9 15 10.3 15 12H17C17 9.2 14.8 7 12 7Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <h3>Smart Crop Recommendation</h3>
+            <p>Input soil parameters (N, P, K) and local weather conditions (temperature, humidity, pH, rainfall) to identify the optimal crop for maximum yield and resource utilization.</p>
+            <div class="card-footer">
+                <a href="/findyourcrop" class="link-btn">Launch Tool &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card card-hover">
+            <div class="card-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19ZM11.5 6H12.5V11.5H18V12.5H12.5V18H11.5V12.5H6V11.5H11.5V6Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <h3>Environmental Assessment</h3>
+            <p>Compare specific soil conditions against crop profile databases. Get a direct compatibility score showing the crop's suitability rate and potential challenges.</p>
+            <div class="card-footer">
+                <a href="/dashboard" class="link-btn">View Soil Profiles &rarr;</a>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card card-hover">
+            <div class="card-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 9.2A12.3 12.3 0 0 0 12 2a12.3 12.3 0 0 0 7 7.2c0 4.6-2.5 8.7-6.3 10.7a2 2 0 0 1-1.4 0C7.5 17.9 5 13.8 5 9.2Z" fill="currentColor" opacity="0.4"/>
+                    <path d="M12 22a3 3 0 0 0 3-3H9a3 3 0 0 0 3 3Z" fill="currentColor"/>
+                    <path d="M12 11a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" fill="currentColor"/>
+                </svg>
+            </div>
+            <h3>Research & Policy Planning</h3>
+            <p>Utilize aggregated dataset statistics and interactive bivariate plots to discover patterns. Inform agricultural strategies, water conservation policies, and fertilizer management.</p>
+            <div class="card-footer">
+                <a href="/dashboard" class="link-btn">Analyze Trends &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="feature-highlight">
+    <div class="container grid grid-2">
+        <div>
+            <h2>Data-Driven Insights for Sustainable Farming</h2>
+            <p>OptiCrop is powered by a high-accuracy Logistic Regression model trained on 2,200 soil and climatic samples. By analyzing nitrogen, phosphorous, potassium, temperature, humidity, pH, and rainfall, the engine recommends one of 22 different crop categories with over 97% classification accuracy.</p>
+            <ul class="feature-list">
+                <li>
+                    <strong>Optimized Yields:</strong> Match crops precisely with the conditions under which they thrive.
+                </li>
+                <li>
+                    <strong>Resource Efficiency:</strong> Prevent fertilizer waste by selecting crops that align with current N-P-K levels.
+                </li>
+                <li>
+                    <strong>Risk Mitigation:</strong> Protect investments by checking historical rainfall and temperature ranges.
+                </li>
+            </ul>
+        </div>
+        <div class="visual-card">
+            <!-- Simulated graphical stats card -->
+            <div class="stats-box">
+                <div class="stat-item">
+                    <span class="stat-number">97.8%</span>
+                    <span class="stat-label">Model Accuracy</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">22</span>
+                    <span class="stat-label">Supported Crops</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">2,000+</span>
+                    <span class="stat-label">Verified Data Rows</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
